@@ -1,3 +1,3 @@
 # Monitoring My Server
 
-A node program that can monitor/check some defined services.
+A program that can monitor/check some defined services.
