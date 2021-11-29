@@ -14,7 +14,7 @@ export class MinecraftService extends Service {
 
   public check(): Promise<boolean> {
     return (
-      status(this.host, this.port)
+      status(this.host, this.port ? { port: this.port } : undefined)
         // .then((javaStatusResponse) => {
         //   console.log(javaStatusResponse);
         //   return javaStatusResponse;
@@ -22,10 +22,12 @@ export class MinecraftService extends Service {
         .then(
           (javaStatusResponse) =>
             Boolean(javaStatusResponse) &&
-            Boolean(javaStatusResponse.players) &&
-            Boolean(javaStatusResponse.players.max) &&
-            javaStatusResponse.players.max > 0
+            Boolean(javaStatusResponse.maxPlayers)
         )
+        .catch((reason) => {
+          console.log(this.name, "produced error", reason);
+          return false;
+        })
     );
   }
 }

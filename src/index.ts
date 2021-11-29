@@ -1,6 +1,13 @@
 import { Config } from "./config/config";
 
-Config.services.forEach(async (service) => {
+// async function logic(): Promise<void> {
+for (const service of Config.services) {
   console.log(JSON.stringify(service));
-  console.log(service.getName(), "is up:", await service.check());
-});
+  // console.log(service.getName(), "is up:", await service.check());
+  service
+    .check()
+    .then((result) => console.log(service.getName(), "is up:", result));
+}
+// }
+
+// logic().then(() => console.log("Fin"));

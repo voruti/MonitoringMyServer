@@ -1,5 +1,5 @@
 export abstract class Service {
-  private name: string;
+  protected name: string;
 
   public constructor(name?: string) {
     if (name) {
