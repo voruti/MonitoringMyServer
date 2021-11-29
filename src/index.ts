@@ -1,13 +1,6 @@
 import { Config } from "./config/config";
 
-// async function logic(): Promise<void> {
-for (const service of Config.services) {
-  console.log(JSON.stringify(service));
-  // console.log(service.getName(), "is up:", await service.check());
-  service
-    .check()
-    .then((result) => console.log(service.getName(), "is up:", result));
-}
-// }
-
-// logic().then(() => console.log("Fin"));
+console.log("Checking every service...");
+Promise.all(Config.services.map((service) => service.check())).then((values) =>
+  console.log("All services up:", values.every(Boolean))
+);
