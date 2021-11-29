@@ -1,0 +1,5 @@
+import { MinecraftService } from "../model/minecraftService";
+
+export class Config {
+  static services = [new MinecraftService("Hypixel", "mc.hypixel.net")];
+}

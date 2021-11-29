@@ -3,13 +3,9 @@ import { status } from "minecraft-server-util";
 
 export class MinecraftService extends Service {
   private host: string;
-  private port: number;
+  private port: number | undefined;
 
-  public constructor(
-    name: string | undefined,
-    host: string,
-    port: number = 25565
-  ) {
+  public constructor(name: string | undefined, host: string, port?: number) {
     super(name);
 
     this.host = host;
