@@ -1,4 +1,5 @@
 import { Service } from "./service.js";
+import { Response } from "node-fetch";
 import fetch from "node-fetch";
 
 /**
@@ -7,34 +8,44 @@ import fetch from "node-fetch";
 export class WebService extends Service {
   private url: string;
   private parts: string[];
+  private additionalCheck: ((response: Response) => boolean) | undefined;
 
   public constructor(
     name: string | undefined,
     url: string,
-    parts: string[] = []
+    parts: string[] = [],
+    additionalCheck?: (response: Response) => boolean
   ) {
     super(name);
 
     this.url = url;
     this.parts = parts;
+    this.additionalCheck = additionalCheck;
   }
 
   public check(): Promise<boolean> {
     return (
       fetch(this.url)
-        // .then(async (response) => {
+        // .then((response) => {
         //   console.log(response);
-        //   console.log(await response.text());
         //   return response;
         // })
         .then(async (response) => {
-          const isOk = Boolean(response) && Boolean(response.ok);
-          if (!isOk) {
-            return false;
+          let isOk = Boolean(response) && Boolean(response.ok);
+          // early return 1:
+          if (!isOk || (this.parts.length === 0 && !this.additionalCheck)) {
+            return isOk;
           }
 
-          const text = await response.text();
-          return this.parts.map((part) => text.includes(part)).every(Boolean);
+          const text = (await response.text()).substring(0, 10000);
+          // console.log(text.replace(RegExp("[^\\s\\x20-\\x7E]", "g"), ""));
+          isOk = this.parts.map((part) => text.includes(part)).every(Boolean);
+          // early return 1:
+          if (!isOk || !this.additionalCheck) {
+            return isOk;
+          }
+
+          return this.additionalCheck(response);
         })
         .catch((reason) => {
           console.log(this.name, "produced error", reason);
