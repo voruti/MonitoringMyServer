@@ -1,4 +1,4 @@
-import { Config } from "./config/config";
+import { Config } from "./config/config.js";
 
 console.log("Checking every service...");
 Promise.all(Config.services.map((service) => service.check())).then((values) =>

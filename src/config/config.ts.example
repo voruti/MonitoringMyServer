@@ -1,5 +1,9 @@
-import { MinecraftService } from "../services/minecraftService";
+import { MinecraftService } from "../services/minecraftService.js";
+import { WebService } from "../services/webService.js";
 
 export class Config {
-  static services = [new MinecraftService("Hypixel", "mc.hypixel.net")];
+  static services = [
+    new MinecraftService("Hypixel", "mc.hypixel.net"),
+    new WebService("Google", "https://google.com"),
+  ];
 }

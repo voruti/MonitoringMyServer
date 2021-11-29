@@ -1,4 +1,4 @@
-import { Service } from "./service";
+import { Service } from "./service.js";
 import { status } from "minecraft-server-util";
 
 export class MinecraftService extends Service {
