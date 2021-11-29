@@ -2,25 +2,44 @@ import { Service } from "./service.js";
 import { Response } from "node-fetch";
 import fetch from "node-fetch";
 
+export interface Checks {
+  /**
+   * Allow any HTTP status code.
+   */
+  allowErrorStatus?: boolean;
+
+  /**
+   * Regex parts to search for in the page.
+   */
+  regexParts?: string[];
+
+  /**
+   * Regex of final URL to check.
+   */
+  regexResultingUrl?: string;
+
+  /**
+   * Any additional checks.
+   */
+  additionalCheck?: (response: Response) => boolean;
+}
+
 /**
- * Tests if an URL is available and (optional) if parts of HTML code are found on it.
+ * By default tests if an URL is available with status 200. Optional checks can be enabled.
  */
 export class WebService extends Service {
   private url: string;
-  private parts: string[];
-  private additionalCheck: ((response: Response) => boolean) | undefined;
+  private checks: Checks;
 
   public constructor(
     name: string | undefined,
     url: string,
-    parts: string[] = [],
-    additionalCheck?: (response: Response) => boolean
+    checks: Checks = {}
   ) {
     super(name);
 
     this.url = url;
-    this.parts = parts;
-    this.additionalCheck = additionalCheck;
+    this.checks = checks;
   }
 
   public check(): Promise<boolean> {
@@ -31,21 +50,38 @@ export class WebService extends Service {
         //   return response;
         // })
         .then(async (response) => {
-          let isOk = Boolean(response) && Boolean(response.ok);
-          // early return 1:
-          if (!isOk || (this.parts.length === 0 && !this.additionalCheck)) {
-            return isOk;
+          if (!this.checks.allowErrorStatus && !response.ok) {
+            return false;
           }
 
-          const text = (await response.text()).substring(0, 10000);
-          // console.log(text.replace(RegExp("[^\\s\\x20-\\x7E]", "g"), ""));
-          isOk = this.parts.map((part) => text.includes(part)).every(Boolean);
-          // early return 1:
-          if (!isOk || !this.additionalCheck) {
-            return isOk;
+          if (this.checks.regexParts && this.checks.regexParts.length > 0) {
+            const text = (await response.text()).substring(0, 10000);
+            // console.log(text.replace(RegExp("[^\\s\\x20-\\x7E]", "g"), ""));
+
+            if (
+              !this.checks.regexParts
+                .map((part) => text.match(RegExp(part, "m")))
+                .every(Boolean)
+            ) {
+              return false;
+            }
           }
 
-          return this.additionalCheck(response);
+          if (
+            this.checks.regexResultingUrl &&
+            !response.url.match(RegExp(this.checks.regexResultingUrl, "m"))
+          ) {
+            return false;
+          }
+
+          if (
+            this.checks.additionalCheck &&
+            !this.checks.additionalCheck(response)
+          ) {
+            return false;
+          }
+
+          return true;
         })
         .catch((reason) => {
           console.log(this.name, "produced error", reason);
