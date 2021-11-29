@@ -1,8 +1,7 @@
-import config from "config";
-import { Service } from "./model/service";
+import { Config } from "./config/config";
 
-if (config.has("services")) {
-  const services = config.get<Service[]>("services");
-
-  services.forEach((service) => console.log(JSON.stringify(service)));
-}
+const services = Config.getServices();
+services.forEach(async (service) => {
+  console.log(JSON.stringify(service));
+  console.log(service.getName(), "is up:", await service.check());
+});
